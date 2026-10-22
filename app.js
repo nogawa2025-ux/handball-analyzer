@@ -1,6 +1,7 @@
 import * as C from './core.js';
 
 const STORAGE_KEY = 'hb-analyzer-v1';
+const APP_VERSION = '2026-10-23';
 const root = document.getElementById('app');
 
 // ---------- 保存 ----------
@@ -604,6 +605,7 @@ function viewSettings() {
       <label class="btn">読み込み<input type="file" accept="application/json" data-change="importData" hidden></label>
     </div>
     <p class="hint">データはこのスマホのブラウザ内に保存されています。機種変更の前などに書き出してください。</p>
+    <p class="hint">バージョン ${APP_VERSION}</p>
   </main>`;
 }
 
