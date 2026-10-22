@@ -573,18 +573,29 @@ function viewReport() {
 
 // ---------- 設定 ----------
 
+const sortRoster = (list) => list.sort((a, b) => Number(a.n) - Number(b.n) || a.n.localeCompare(b.n));
+
+function rosterRow(p) {
+  return `<label class="roster-row" data-n="${esc(p.n)}"><b>${esc(p.n)}</b><input name="rosterName" placeholder="名前（任意）" value="${esc(p.name)}"></label>`;
+}
+
 function viewSettings() {
   const s = db.settings;
-  const rosterText = s.roster.map((p) => `${p.n} ${p.name ?? ''}`.trim()).join('\n');
+  const selected = new Set(s.roster.map((p) => p.n));
+  // 1〜99番 + 以前に登録した範囲外の番号（00など）
+  const nums = [...Array.from({ length: 99 }, (_, i) => String(i + 1)), ...s.roster.map((p) => p.n).filter((n) => !/^([1-9]|[1-9]\d)$/.test(n))];
+  const grid = nums.map((n) => `<button type="button" class="num ${selected.has(n) ? 'on' : ''}" data-act="toggleRosterNum" data-num="${esc(n)}">${esc(n)}</button>`).join('');
   return `
   <header class="topbar"><button class="icon-btn" data-act="go" data-view="home" aria-label="戻る">←</button><h1>設定</h1><span></span></header>
   <main class="page">
     <form data-form="settings" class="form">
       <label>自チーム名<input name="ourName" value="${esc(s.ourName)}" required></label>
       <label>前後半の時間（分）<input type="number" name="halfMinutes" min="5" max="40" value="${s.halfMinutes}"></label>
-      <label>自チームの選手（1行に「背番号 名前」）
-        <textarea name="roster" rows="10" placeholder="1 田中&#10;7 山田&#10;10 佐藤">${esc(rosterText)}</textarea>
-      </label>
+      <div class="field">自チームの選手（背番号をタップ）
+        <div class="num-grid dense">${grid}</div>
+      </div>
+      <div class="roster-list" id="rosterList">${sortRoster([...s.roster]).map(rosterRow).join('')}</div>
+      <p class="hint" id="rosterEmpty" ${s.roster.length ? 'hidden' : ''}>番号を選ぶと、ここで名前を入力できます。</p>
       <button class="btn primary big" type="submit">保存</button>
     </form>
     <h2 class="section-title">データのバックアップ</h2>
@@ -698,10 +709,24 @@ const actions = {
     const list = m.roster[ui.sheet.team];
     if (!list.some((p) => p.n === n)) {
       list.push({ n, name: '' });
-      list.sort((a, b) => Number(a.n) - Number(b.n) || a.n.localeCompare(b.n));
+      sortRoster(list);
       saveDb();
     }
     actions.pickPlayer({ num: n });
+  },
+  // 画面を作り直さずに行を足し引きする（入力中の名前を消さないため）
+  toggleRosterNum: (d, el) => {
+    const list = document.getElementById('rosterList');
+    const row = [...list.children].find((r) => r.dataset.n === d.num);
+    if (row) {
+      row.remove();
+      el.classList.remove('on');
+    } else {
+      list.insertAdjacentHTML('beforeend', rosterRow({ n: d.num, name: '' }));
+      sortRoster([...list.children].map((r) => ({ n: r.dataset.n, el: r }))).forEach((r) => list.append(r.el));
+      el.classList.add('on');
+    }
+    document.getElementById('rosterEmpty').hidden = list.children.length > 0;
   },
   saveShot: (d) => {
     const m = currentMatch();
@@ -814,10 +839,7 @@ const forms = {
     go('record', { matchId: m.id, attack: focus, team: focus, shared: null, combined: null, report: null });
   },
   settings: (f) => {
-    const roster = f.roster.value.split('\n').map((line) => line.trim()).filter(Boolean).map((line) => {
-      const [n, ...rest] = line.split(/\s+/);
-      return { n, name: rest.join(' ') };
-    });
+    const roster = [...f.querySelectorAll('.roster-row')].map((row) => ({ n: row.dataset.n, name: row.querySelector('input').value.trim() }));
     db.settings = { ourName: f.ourName.value.trim() || '自チーム', halfMinutes: Number(f.halfMinutes.value) || 30, roster };
     saveDb();
     alert('保存しました');

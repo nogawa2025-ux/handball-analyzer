@@ -162,6 +162,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .num.on { background: var(--text); color: var(--surface); }
 .num.on small { color: var(--surface); }
 .num.add { border-style: dashed; color: var(--text-2); }
+.num-grid.dense { grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.num-grid.dense .num { min-height: 40px; font-size: 16px; }
+.form .field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--text-2); }
+.roster-list { display: flex; flex-direction: column; gap: 6px; }
+.form .roster-row { flex-direction: row; align-items: center; gap: 8px; }
+.roster-row b { min-width: 2.5em; text-align: center; font-size: 18px; color: var(--text); }
+.roster-row input { flex: 1; min-width: 0; }
 .goal-grid { display: grid; grid-template-columns: repeat(3, 1fr); width: 60%; margin: 0 auto; border: 4px solid var(--text-2); border-bottom: 0; aspect-ratio: 3 / 2; }
 .goal-cell { border: 1px dashed var(--axis); background: transparent; cursor: pointer; font-size: 18px; color: var(--critical); }
 .goal-cell.on { background: var(--surface-2); }

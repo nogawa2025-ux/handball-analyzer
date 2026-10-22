@@ -1,5 +1,5 @@
 // オフラインでも使えるように、アプリのファイルをキャッシュする
-const CACHE = 'hb-analyzer-v2';
+const CACHE = 'hb-analyzer-v3';
 const FILES = ['./', './index.html', './styles.css', './app.js', './core.js', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {
